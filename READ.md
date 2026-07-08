@@ -20,6 +20,14 @@ Notebook trực quan chính:
 
 - `VN_Index_Stochastic_MACD_Backtest.ipynb`: notebook trình bày mô hình, biểu đồ, bảng đo lường và nhận xét học thuật.
 
+Chạy tối ưu tham số:
+
+```bash
+/home/namngyh/miniconda3/envs/eda/bin/python optimize_strategy_parameters.py
+```
+
+Kết quả tối ưu được lưu trong `outputs_optimization/`.
+
 ## Chia dữ liệu
 
 - Full data dùng cho backtest: `2006-01-03` đến `2026-07-01`, gồm `5,104` quan sát daily return.
@@ -78,6 +86,28 @@ Notebook trực quan chính:
 - MACD có beta thấp nhất với thị trường: `0.407` full data và `0.355` test, thể hiện mức tiếp xúc thị trường thấp hơn.
 - Theo tổng điểm VN-Index, MACD tốt hơn Ito trên cả full data và test, nhưng trên test vẫn thấp hơn Buy & Hold về điểm tuyệt đối.
 
+## Tối Ưu Tham Số
+
+Quy trình tối ưu dùng split theo thời gian `60% train / 20% validation / 20% test`. Tham số được chọn trên validation bằng score:
+
+`Sharpe + 0.30 * Calmar + 0.20 * CAGR`
+
+Test cuối không được dùng để chọn tham số.
+
+| Strategy | Best params | Test total points | Test total return | Test CAGR | Test Sharpe | Test max drawdown |
+|---|---|---:|---:|---:|---:|---:|
+| Baseline Ito | drift 63, prior 126, risk buffer 0.02 | 40.18 | 1.29% | 0.32% | 0.091 | -18.48% |
+| Optimized Ito | drift 21, prior 63, risk buffer 0.04 | 253.11 | 15.69% | 3.66% | 0.371 | -18.88% |
+| Baseline MACD | MACD(12,26,9) | 618.84 | 48.80% | 10.31% | 0.885 | -21.39% |
+| Optimized MACD | MACD(6,26,12) | 772.12 | 66.48% | 13.41% | 1.111 | -21.27% |
+| Buy & Hold | benchmark | 579.28 | 45.04% | 9.61% | 0.574 | -30.28% |
+
+Nhận xét tối ưu:
+
+- Ito được cải thiện rõ về return và Sharpe, nhưng vẫn là mô hình phòng thủ hơn là mô hình bắt trend mạnh.
+- MACD tối ưu `6,26,12` cải thiện cả total return, Sharpe và tổng điểm so với MACD mặc định `12,26,9`.
+- Trong test cuối `2022-05-30` đến `2026-07-01`, Optimized MACD vượt Buy & Hold về return/risk adjusted return, nhưng đây vẫn cần được kiểm định thêm bằng walk-forward.
+
 ## File Output Quan Trọng
 
 - `outputs_stochastic_calculus/advanced_backtest_metrics.md`: bảng đầy đủ tất cả chỉ số.
@@ -95,3 +125,8 @@ Notebook trực quan chính:
 - `outputs_stochastic_calculus/return_distribution_test.png`: phân phối daily return.
 - `outputs_stochastic_calculus/signals_on_price.png`: điểm vào/ra lệnh Ito.
 - `outputs_stochastic_calculus/forecast_train_test.png`: biểu đồ forecast train/test.
+- `outputs_optimization/optimization_report.md`: báo cáo tối ưu tham số.
+- `outputs_optimization/optimized_test_comparison_formatted.csv`: bảng so sánh baseline/tối ưu trên test cuối.
+- `outputs_optimization/optimized_equity_curve_test.png`: equity curve của baseline/tối ưu và buy-and-hold.
+- `outputs_optimization/ito_validation_grid.csv`: grid search Ito.
+- `outputs_optimization/macd_validation_grid.csv`: grid search MACD.

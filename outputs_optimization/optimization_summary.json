@@ -1,0 +1,27 @@
+{
+  "train": [
+    "2006-01-03",
+    "2018-04-26"
+  ],
+  "validation": [
+    "2018-04-27",
+    "2022-05-27"
+  ],
+  "test": [
+    "2022-05-30",
+    "2026-07-01"
+  ],
+  "best_ito": {
+    "drift_window": 21,
+    "prior_strength": 63,
+    "risk_buffer": 0.04,
+    "validation_score": 1.1073403357311231
+  },
+  "best_macd": {
+    "fast": 6,
+    "slow": 26,
+    "signal_span": 12,
+    "validation_score": 1.6034897700741995
+  },
+  "output_dir": "outputs_optimization"
+}
