@@ -175,6 +175,143 @@ Kết quả tối ưu gần nhất của bạn:
 | Ito Bayes-GARCH | `drift_window=126`, `prior_strength=63`, `risk_buffer=0.08` | 1.015 |
 | MACD | `fast=6`, `slow=26`, `signal=12` | 1.603 |
 
+## Stress-Test Các Năm Khó Khăn Và Biến Động Mạnh Nhất
+
+Mục tiêu của phần này là kiểm tra 3 chiến lược trong những năm mà VN-Index có điều kiện thị trường khó: volatility cao, downside volatility cao, drawdown sâu, hoặc annual return yếu. Mỗi năm được backtest độc lập với capital reset về `1.0` từ đầu năm để tránh việc kết quả của năm trước làm méo kết quả của năm sau.
+
+Script dùng để chạy lại:
+
+```bash
+/home/namngyh/miniconda3/envs/eda/bin/python stress_year_backtest.py
+```
+
+Output được lưu tại:
+
+- `outputs_stress_years/stress_year_ranking.csv`
+- `outputs_stress_years/stress_year_metrics.csv`
+- `outputs_stress_years/stress_year_metrics_formatted.csv`
+- `outputs_stress_years/stress_year_report.md`
+- `outputs_stress_years/stress_year_ranking.png`
+- `outputs_stress_years/stress_year_equity_curves.png`
+- `outputs_stress_years/stress_year_drawdowns.png`
+- `outputs_stress_years/stress_year_metric_heatmap.png`
+
+### Phương Pháp Chọn Năm Stress
+
+Các năm stress được chọn bằng composite stress score từ dữ liệu Buy & Hold/VN-Index. Score này xếp hạng từng năm theo 4 nhóm rủi ro:
+
+1. Annualized volatility cao.
+2. Downside volatility cao.
+3. Max drawdown sâu.
+4. Annual return yếu.
+
+Điểm stress càng thấp thì năm đó càng khó. 5 năm được chọn tự động là `2008`, `2022`, `2020`, `2018`, `2006`.
+
+| Year | Sessions | VN-Index return | Annual volatility | Max drawdown | Worst day | Stress score |
+|---|---:|---:|---:|---:|---:|---:|
+| 2008 | 245 | -65.96% | 37.05% | -68.85% | -4.69% | 7 |
+| 2022 | 249 | -32.78% | 24.83% | -40.34% | -4.95% | 16 |
+| 2020 | 252 | 14.87% | 22.79% | -33.51% | -6.28% | 24 |
+| 2018 | 248 | -9.32% | 22.28% | -26.21% | -5.10% | 26 |
+| 2006 | 249 | 144.48% | 32.27% | -36.81% | -4.84% | 29 |
+| 2009 | 251 | 56.78% | 34.58% | -30.32% | -4.55% | 31 |
+| 2011 | 248 | -27.46% | 21.15% | -33.45% | -4.03% | 32 |
+| 2007 | 248 | 23.31% | 27.29% | -24.50% | -4.37% | 38 |
+| 2026 | 120 | 4.53% | 21.16% | -16.38% | -6.51% | 38 |
+| 2010 | 250 | -2.05% | 21.01% | -22.86% | -3.95% | 39 |
+
+Lưu ý quan trọng: `2006` không phải năm giảm, nhưng vẫn lọt nhóm stress vì volatility `32.27%`, downside volatility cao và max drawdown `-36.81%`. Đây là một năm tăng mạnh nhưng rung lắc cực lớn, nên phù hợp để kiểm tra liệu chiến lược có giữ được upside khi thị trường đi lên trong biến động cao hay không.
+
+![Stress-year ranking](outputs_stress_years/stress_year_ranking.png)
+
+### Bảng Backtest Theo Từng Năm Stress
+
+| Year | Strategy | Total points | Total return | Annual volatility | Sharpe | Sortino | Max drawdown | VaR 95% daily | CVaR 95% daily | Win rate | Exposure | Trades |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 2008 | Ito Bayes-GARCH | 0.00 | 0.00% | 0.00% |  |  | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 0 |
+| 2008 | MACD(6,26,12) | -126.26 | -11.96% | 22.57% | -0.467 | -0.509 | -28.59% | -2.74% | -3.64% | 25.31% | 48.98% | 9 |
+| 2008 | Buy & Hold | -611.42 | -65.96% | 37.05% | -2.800 | -5.134 | -68.85% | -4.22% | -4.47% | 44.08% | 100.00% | 1 |
+| 2022 | Ito Bayes-GARCH | -123.00 | -7.92% | 5.12% | -1.605 | -0.660 | -7.92% | -0.05% | -0.72% | 2.41% | 7.63% | 6 |
+| 2022 | MACD(6,26,12) | -99.06 | -9.16% | 15.06% | -0.570 | -0.514 | -21.27% | -1.66% | -2.74% | 24.90% | 50.60% | 9 |
+| 2022 | Buy & Hold | -491.19 | -32.78% | 24.83% | -1.494 | -1.914 | -40.34% | -3.22% | -4.06% | 49.40% | 100.00% | 1 |
+| 2020 | Ito Bayes-GARCH | 169.93 | 18.53% | 6.88% | 2.505 | 1.715 | -4.23% | -0.42% | -1.00% | 19.44% | 28.17% | 4 |
+| 2020 | MACD(6,26,12) | 321.09 | 46.13% | 13.62% | 2.855 | 2.801 | -9.17% | -1.04% | -2.02% | 40.08% | 61.11% | 8 |
+| 2020 | Buy & Hold | 142.88 | 14.87% | 22.79% | 0.723 | 0.736 | -33.51% | -2.83% | -4.16% | 61.90% | 100.00% | 1 |
+| 2018 | Ito Bayes-GARCH | 36.79 | 3.88% | 11.60% | 0.392 | 0.202 | -10.64% | -0.70% | -2.14% | 17.34% | 25.81% | 1 |
+| 2018 | MACD(6,26,12) | 178.33 | 18.71% | 12.30% | 1.479 | 1.434 | -8.52% | -1.42% | -2.08% | 38.31% | 59.27% | 8 |
+| 2018 | Buy & Hold | -91.70 | -9.32% | 22.28% | -0.334 | -0.428 | -26.21% | -2.57% | -3.52% | 56.05% | 100.00% | 1 |
+| 2006 | Ito Bayes-GARCH | 85.95 | 28.43% | 26.42% | 1.090 | 1.242 | -33.96% | -3.14% | -4.05% | 26.91% | 49.80% | 5 |
+| 2006 | MACD(6,26,12) | 415.80 | 112.56% | 22.80% | 3.465 | 3.996 | -13.69% | -1.73% | -3.07% | 28.92% | 48.19% | 7 |
+| 2006 | Buy & Hold | 444.27 | 144.48% | 32.27% | 2.969 | 4.547 | -36.81% | -3.50% | -4.15% | 57.03% | 100.00% | 1 |
+
+![Stress-year equity curves](outputs_stress_years/stress_year_equity_curves.png)
+
+![Stress-year drawdowns](outputs_stress_years/stress_year_drawdowns.png)
+
+![Stress-year metric heatmap](outputs_stress_years/stress_year_metric_heatmap.png)
+
+### Nhận Xét Chi Tiết Theo Từng Năm
+
+**Năm 2008: khủng hoảng giảm sâu, VN-Index mất `-65.96%`**
+
+Đây là năm stress nặng nhất trong toàn bộ mẫu: annual volatility `37.05%`, max drawdown `-68.85%`, worst day `-4.69%`. Buy & Hold chịu toàn bộ cú sụp của thị trường, mất `-611.42` điểm và total return `-65.96%`. MACD giảm thiệt hại đáng kể so với Buy & Hold, nhưng vẫn lỗ `-11.96%` và max drawdown `-28.59%` vì chiến lược trend-following vẫn có các pha vào lệnh sai trong bear market.
+
+Ito Bayes-GARCH đứng ngoài hoàn toàn: exposure `0.00%`, trades `0`, return `0.00%`, drawdown `0.00%`. Điều này cho thấy mô hình rất nhạy với trạng thái rủi ro cao và drift bất lợi. Trong bối cảnh khủng hoảng giảm một chiều, đây là ưu điểm lớn: mô hình bảo toàn vốn tốt nhất. Nhưng cũng cần hiểu rằng kết quả này không phải do mô hình dự báo tăng tốt, mà do mô hình từ chối tham gia thị trường khi điều kiện stochastic return-risk không đạt ngưỡng.
+
+**Năm 2022: bear market hiện đại, thanh khoản và tâm lý xấu**
+
+VN-Index giảm `-32.78%`, max drawdown `-40.34%`, annual volatility `24.83%`. Buy & Hold mất `-491.19` điểm và chịu tail risk rõ rệt với daily CVaR 95% `-4.06%`. MACD giảm lỗ xuống `-9.16%`, nhưng max drawdown vẫn `-21.27%` vì chiến lược có exposure `50.60%` trong một năm nhiều nhịp hồi giả.
+
+Ito Bayes-GARCH là chiến lược ít lỗ nhất với total return `-7.92%` và drawdown `-7.92%`. Exposure chỉ `7.63%`, cho thấy mô hình gần như chuyển sang cash trong phần lớn năm. Tuy nhiên Sharpe `-1.605` vẫn xấu vì những lần vào lệnh hiếm hoi không tạo được lợi nhuận đủ lớn. Đây là bằng chứng quan trọng: Ito quản trị rủi ro tốt, nhưng khi tín hiệu entry quá ít và không đủ chính xác, hiệu quả return-adjusted vẫn có thể yếu.
+
+**Năm 2020: cú sốc mạnh nhưng hồi phục nhanh**
+
+Năm 2020 có worst day `-6.28%`, max drawdown Buy & Hold `-33.51%`, nhưng annual return cả năm vẫn dương `14.87%` nhờ pha hồi phục mạnh. Đây là môi trường rất khác 2008 và 2022: thị trường giảm sốc rồi chuyển sang trend tăng.
+
+MACD thắng rõ rệt với total return `46.13%`, `321.09` điểm, Sharpe `2.855`. Lý do chính là MACD phản ứng tốt với momentum hồi phục, exposure `61.11%` giúp chiến lược tham gia nhiều hơn vào pha tăng. Ito Bayes-GARCH cũng tốt với return `18.53%` và drawdown chỉ `-4.23%`, nhưng exposure `28.17%` làm mô hình bỏ lỡ một phần lớn upside. Buy & Hold chỉ đạt `14.87%` vì chịu trọn cú rơi đầu năm.
+
+Kết luận năm 2020: MACD tốt nhất khi thị trường có reversal và trend hồi phục rõ; Ito phù hợp nếu ưu tiên drawdown thấp hơn lợi nhuận tuyệt đối.
+
+**Năm 2018: thị trường âm nhưng có nhịp xu hướng đủ rõ**
+
+Buy & Hold giảm `-9.32%`, max drawdown `-26.21%`. Đây là năm không sụp như 2008 nhưng đủ khó vì xu hướng tổng thể yếu và biến động cao. MACD đạt total return `18.71%`, Sharpe `1.479`, max drawdown `-8.52%`, vượt cả Ito và Buy & Hold. Điểm đáng chú ý là MACD không chỉ thắng về return mà còn thắng luôn về drawdown trong năm này.
+
+Ito đạt return `3.88%`, drawdown `-10.64%`, exposure `25.81%`. Mô hình có bảo vệ vốn nhưng chưa khai thác tốt các nhịp tăng trong năm. Với chỉ `1` entry, Ito có vẻ quá thận trọng trong bối cảnh thị trường không giảm một chiều. Khi thị trường dao động nhưng vẫn có những trend trung hạn, MACD có lợi thế hơn.
+
+**Năm 2006: tăng rất mạnh nhưng rủi ro nội năm cao**
+
+VN-Index tăng `144.48%`, nhưng annual volatility `32.27%` và max drawdown `-36.81%`. Đây là năm cho thấy khác biệt giữa stress do giảm giá và stress do biến động cao. Buy & Hold thắng về total return vì nắm giữ toàn bộ xu hướng tăng, đạt `444.27` điểm và `144.48%`.
+
+MACD đứng thứ hai về return với `112.56%`, nhưng là chiến lược kiểm soát drawdown tốt nhất: `-13.69%` so với Buy & Hold `-36.81%` và Ito `-33.96%`. Điều này cho thấy MACD lọc bớt các pha giảm mạnh mà vẫn giữ được phần lớn xu hướng tăng. Ito chỉ đạt `28.43%`, thấp hơn nhiều vì exposure `49.80%` nhưng các entry không tối ưu bằng MACD; thêm nữa, risk buffer làm mô hình rời thị trường trong một số đoạn tăng biến động cao.
+
+### So Sánh Tổng Quát Trong Nhóm Năm Stress
+
+**Ito Bayes-GARCH**
+
+- Mạnh nhất trong môi trường giảm sâu hoặc rủi ro hệ thống rõ: `2008` và `2022`.
+- Drawdown thường thấp hơn Buy & Hold rất nhiều nhờ exposure thấp.
+- Điểm yếu là bỏ lỡ upside khi thị trường hồi nhanh hoặc tăng mạnh: `2020`, `2018`, `2006`.
+- Khi volatility cao nhưng trend tăng vẫn bền, mô hình có thể quá bảo thủ vì drift kỳ vọng không vượt đủ ngưỡng so với volatility.
+
+**MACD(6,26,12)**
+
+- Mạnh nhất trong các năm có trend hồi phục hoặc momentum đủ rõ: `2020`, `2018`, `2006`.
+- Trong `2008`, MACD vẫn giảm nhưng mức lỗ nhỏ hơn Buy & Hold rất nhiều.
+- MACD có ưu thế thực nghiệm vì nó trực tiếp bám vào cấu trúc xu hướng giá, trong khi Ito Bayes-GARCH chủ yếu nhìn return-risk và volatility.
+- Điểm yếu là vẫn có thể bị whipsaw trong bear market, thể hiện qua drawdown `-28.59%` năm `2008` và `-21.27%` năm `2022`.
+
+**Buy & Hold**
+
+- Tốt nhất khi thị trường tăng cực mạnh và trend dài: `2006`.
+- Rất yếu trong năm giảm sâu: `2008` và `2022`.
+- Đây là benchmark quan trọng vì nó cho biết phần lợi nhuận đến từ beta thị trường thuần túy. Trong stress-test, Buy & Hold có upside lớn nhưng risk-adjusted không ổn định.
+
+### Kết Luận Từ Stress-Test
+
+Stress-test củng cố kết luận của backtest chính: Ito Bayes-GARCH không nên được xem là chiến lược alpha độc lập mạnh nhất, mà phù hợp hơn như một risk filter hoặc volatility-aware allocation layer. Mô hình này có giá trị lớn trong việc giảm thiệt hại ở năm xấu, nhưng đánh đổi bằng việc bỏ lỡ lợi nhuận trong năm hồi phục mạnh.
+
+MACD(6,26,12) là benchmark giao dịch mạnh hơn trong dữ liệu hiện tại vì bắt được momentum và regime hồi phục tốt hơn. Tuy nhiên MACD không bảo vệ vốn tuyệt đối trong khủng hoảng giảm một chiều. Vì vậy hướng phát triển hợp lý nhất là kết hợp: dùng MACD để xác nhận trend, dùng Ito Bayes-GARCH để điều chỉnh exposure, position sizing hoặc giảm tỷ trọng khi volatility/tail risk tăng cao.
+
 ## File Output Quan Trọng
 
 - `outputs_stochastic_calculus/advanced_backtest_metrics.md`: bảng đầy đủ tất cả chỉ số.
@@ -197,3 +334,12 @@ Kết quả tối ưu gần nhất của bạn:
 - `outputs_optimization/optimized_equity_curve_test.png`: equity curve của baseline/tối ưu và buy-and-hold.
 - `outputs_optimization/ito_validation_grid.csv`: grid search Ito.
 - `outputs_optimization/macd_validation_grid.csv`: grid search MACD.
+- `stress_year_backtest.py`: script stress-test 3 chiến lược trong các năm biến động mạnh nhất.
+- `outputs_stress_years/stress_year_report.md`: báo cáo stress-test tự động.
+- `outputs_stress_years/stress_year_metrics.csv`: bảng stress-test raw numeric.
+- `outputs_stress_years/stress_year_metrics_formatted.csv`: bảng stress-test đã format.
+- `outputs_stress_years/stress_year_ranking.csv`: bảng xếp hạng năm stress.
+- `outputs_stress_years/stress_year_ranking.png`: biểu đồ ranking năm stress.
+- `outputs_stress_years/stress_year_equity_curves.png`: equity curve theo từng năm stress.
+- `outputs_stress_years/stress_year_drawdowns.png`: drawdown theo từng năm stress.
+- `outputs_stress_years/stress_year_metric_heatmap.png`: heatmap so sánh chỉ số stress-test.
