@@ -32,6 +32,8 @@ Chạy tối ưu tham số:
 
 ## Kết quả test nổi bật sau cập nhật
 
+Khung thời gian test: `2020-05-14` đến `2026-07-01` (`1,532` phiên giao dịch).
+
 | Strategy | Total points | Total return | CAGR | Sharpe | Max drawdown |
 |---|---:|---:|---:|---:|---:|
 | Ito Bayes-GARCH | 274.26 | 30.08% | 4.42% | 0.489 | -13.99% |

@@ -37,6 +37,8 @@
 
 ## Backtest on Test
 
+Test window: `2020-05-14` to `2026-07-01` (`1,532` trading sessions).
+
 | Metric | Ito Bayes-GARCH Strategy | MACD(6,26,12) Long/Exit | Buy & Hold |
 |---|---:|---:|---:|
 | Total return | 30.08% | 130.15% | 123.61% |

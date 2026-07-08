@@ -39,6 +39,8 @@ Notebook trực quan chính:
 
 ## Bảng So Sánh Sau Khi Cập Nhật Tham Số
 
+Khung thời gian test trong bảng: `2020-05-14` đến `2026-07-01` (`1,532` phiên giao dịch).
+
 | Metric | Full Data - Ito | Full Data - MACD(6,26,12) | Full Data - Buy & Hold | Test - Ito | Test - MACD(6,26,12) | Test - Buy & Hold |
 |---|---:|---:|---:|---:|---:|---:|
 | Market exposure | 27.02% | 53.59% | 100.00% | 33.16% | 55.16% | 100.00% |
