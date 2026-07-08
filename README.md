@@ -6,7 +6,7 @@ Repo này kiểm định chiến lược ra/vào lệnh VN-Index dựa trên Sto
 
 - `stochastic_ito_bayes_garch_strategy.py`: pipeline chính với tham số đã tối ưu.
 - `optimize_strategy_parameters.py`: tối ưu tham số trên validation, sau đó đánh giá out-of-sample trên test.
-- `VN_Index_Stochastic_MACD_Backtest.ipynb`: notebook trực quan hóa, nhận xét học thuật và so sánh mô hình.
+- `VN_Index_Stochastic_MACD_Backtest.ipynb`: notebook trực quan hóa, nhận xét chi tiết và so sánh mô hình.
 - `READ.md`: báo cáo Markdown chi tiết với total điểm, annual return, rủi ro nâng cao và thống kê lệnh.
 - `outputs_stochastic_calculus/`: CSV, PNG, report và bảng backtest sau khi cập nhật tham số tối ưu.
 - `outputs_optimization/`: kết quả grid search, bảng tham số tối ưu và backtest test cuối.

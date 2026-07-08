@@ -35,6 +35,6 @@
 | Optimized MACD | 772.12       | 190.57        | 66.48%       | 13.41% | 11.97%            | 1.111  | 1.000   | 0.630  | -21.27%      | -1.02%       | -2.01%        | 40     | 52.50%         | 1.39%            | 19.30            | 54.95%   | 1.327  |
 | Buy & Hold     | 579.28       | 142.98        | 45.04%       | 9.61%  | 19.25%            | 0.574  | 0.678   | 0.317  | -30.28%      | -1.86%       | -3.20%        | 1      | 100.00%        | 45.04%           | 579.28           | 100.00%  | -0.812 |
 
-## Academic Reading
+## Interpretation
 
 The optimized MACD configuration is selected as a trend-following rule, while the Ito Bayes-GARCH configuration is selected as a stochastic drift-volatility filter. A higher validation score does not guarantee dominance on the test set; it only formalizes the parameter search without looking at future test outcomes. The gap between validation and test performance should be read as model-selection risk.

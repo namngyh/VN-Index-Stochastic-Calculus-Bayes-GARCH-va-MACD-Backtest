@@ -412,7 +412,7 @@ def save_report(
 
 {dataframe_to_markdown(formatted)}
 
-## Academic Reading
+## Interpretation
 
 The optimized MACD configuration is selected as a trend-following rule, while the Ito Bayes-GARCH configuration is selected as a stochastic drift-volatility filter. A higher validation score does not guarantee dominance on the test set; it only formalizes the parameter search without looking at future test outcomes. The gap between validation and test performance should be read as model-selection risk.
 """

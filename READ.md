@@ -116,7 +116,7 @@ Khung thời gian test trong bảng: `2020-05-14` đến `2026-07-01` (`1,532` p
 
 6. **Giả định log-return kiểu Brownian/GARCH chưa mô tả đầy đủ cấu trúc thị trường**
 
-   VN-Index chịu ảnh hưởng của dòng tiền, chính sách, tâm lý, thanh khoản và regime vĩ mô. Mô hình Ito-Bayes-GARCH hiện tại chủ yếu dùng chuỗi giá/return và volatility, nên chưa có thông tin trend, momentum, volume, macro hoặc regime filter. Vì vậy mô hình có nền tảng học thuật tốt nhưng chưa đủ thông tin để cạnh tranh với một rule momentum đơn giản trong giai đoạn thị trường có xu hướng.
+   VN-Index chịu ảnh hưởng của dòng tiền, chính sách, tâm lý, thanh khoản và regime vĩ mô. Mô hình Ito-Bayes-GARCH hiện tại chủ yếu dùng chuỗi giá/return và volatility, nên chưa có thông tin trend, momentum, volume, macro hoặc regime filter. Vì vậy mô hình có nền tảng mô hình hóa tốt nhưng chưa đủ thông tin để cạnh tranh với một rule momentum đơn giản trong giai đoạn thị trường có xu hướng.
 
 ### Hệ Quả
 

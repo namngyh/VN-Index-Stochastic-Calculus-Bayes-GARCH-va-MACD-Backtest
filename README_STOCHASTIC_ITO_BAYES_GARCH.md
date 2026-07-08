@@ -32,7 +32,7 @@ Có thể thay đổi tham số:
 
 Tất cả nằm trong `outputs_stochastic_calculus/`:
 
-- `VN_Index_Stochastic_MACD_Backtest.ipynb`: notebook trực quan hóa và nhận xét học thuật.
+- `VN_Index_Stochastic_MACD_Backtest.ipynb`: notebook trực quan hóa và nhận xét chi tiết.
 - `report.md`: báo cáo mô hình, split, forecast metrics và backtest metrics.
 - `advanced_backtest_metrics.md`: bảng backtest chuyên sâu so sánh Full Data và Test.
 - `advanced_backtest_metrics.csv`: dữ liệu chỉ số dạng raw để phân tích tiếp.
