@@ -20,8 +20,12 @@ Có thể thay đổi tham số:
   --start-date 2006-01-01 \
   --train-ratio 0.70 \
   --transaction-cost 0.0005 \
-  --risk-buffer 0.02 \
-  --drift-window 63
+  --risk-buffer 0.08 \
+  --drift-window 126 \
+  --drift-prior-strength 63 \
+  --macd-fast 6 \
+  --macd-slow 26 \
+  --macd-signal 12
 ```
 
 ## Output
@@ -52,6 +56,7 @@ Tất cả nằm trong `outputs_stochastic_calculus/`:
 - Train: 2006-01-03 đến 2020-05-13.
 - Test: 2020-05-14 đến 2026-07-01.
 - Directional accuracy test: khoảng 55%.
-- Chiến lược có drawdown thấp hơn buy-and-hold, nhưng tổng lợi nhuận thấp hơn trong giai đoạn test mặc định.
+- Ito Bayes-GARCH có drawdown thấp hơn buy-and-hold trong test.
+- MACD(6,26,12) sau tối ưu vượt buy-and-hold về total return và Sharpe trong test.
 
 Đây là research backtest, chưa phải hệ thống giao dịch thực chiến. Bước tiếp theo nên là walk-forward refit, kiểm định nhạy phí giao dịch, threshold, và thêm bộ lọc regime.

@@ -46,9 +46,12 @@ class StrategyConfig:
     start_date: str = "2006-01-01"
     train_ratio: float = 0.70
     transaction_cost: float = 0.0005
-    risk_buffer: float = 0.02
-    drift_window: int = 63
-    drift_prior_strength: int = 126
+    risk_buffer: float = 0.08
+    drift_window: int = 126
+    drift_prior_strength: int = 63
+    macd_fast: int = 6
+    macd_slow: int = 26
+    macd_signal: int = 12
     posterior_samples: int = 2000
     random_state: int = 42
 
@@ -289,6 +292,9 @@ def build_prediction_table(
     test_forecast: pd.DataFrame,
     transaction_cost: float,
     risk_buffer: float,
+    macd_fast: int,
+    macd_slow: int,
+    macd_signal: int,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     train_pred = train[["date", "close", "log_return", "simple_return"]].copy()
     train_pred = train_pred.join(train_forecast)
@@ -314,7 +320,7 @@ def build_prediction_table(
 
     full_strategy = apply_strategy_rules(pred, transaction_cost, risk_buffer)
     test_strategy = apply_strategy_rules(pred[pred["split"] == "test"].copy(), transaction_cost, risk_buffer)
-    full_macd = apply_macd_strategy(pred, transaction_cost)
+    full_macd = apply_macd_strategy(pred, transaction_cost, macd_fast, macd_slow, macd_signal)
     test_macd = full_macd[full_macd["split"] == "test"].copy()
     test_macd = finalize_long_exit_strategy(test_macd, test_macd["signal"], transaction_cost)
 
@@ -380,7 +386,12 @@ def apply_macd_strategy(
     strategy["macd_histogram"] = strategy["macd_line"] - strategy["macd_signal_line"]
     raw_signal = (strategy["macd_line"] > strategy["macd_signal_line"]).astype(int)
     executable_signal = raw_signal.shift(1).fillna(0).astype(int)
-    return finalize_long_exit_strategy(strategy, executable_signal, transaction_cost, signal_name="macd_12_26_9")
+    return finalize_long_exit_strategy(
+        strategy,
+        executable_signal,
+        transaction_cost,
+        signal_name=f"macd_{fast}_{slow}_{signal_span}",
+    )
 
 
 def max_drawdown(equity: pd.Series) -> float:
@@ -687,7 +698,7 @@ def save_backtest_plot(strategy: pd.DataFrame, output_dir: Path, macd_strategy: 
         ax.plot(
             macd_strategy["date"],
             macd_strategy["strategy_equity"],
-            label="MACD(12,26,9) long/exit",
+            label="MACD(6,26,12) long/exit",
             color="#ea580c",
             linewidth=1.2,
         )
@@ -724,7 +735,7 @@ def save_macd_signal_plot(macd_strategy: pd.DataFrame, output_dir: Path) -> None
     ax.plot(macd_strategy["date"], macd_strategy["close"], label="VN-Index", color="#1f2937", linewidth=1.4)
     ax.scatter(entries["date"], entries["close"], label="MACD long", marker="^", color="#16a34a", s=42, zorder=3)
     ax.scatter(exits["date"], exits["close"], label="MACD exit", marker="v", color="#dc2626", s=42, zorder=3)
-    ax.set_title("MACD(12,26,9) Long/Exit Signals on VN-Index")
+    ax.set_title("MACD(6,26,12) Long/Exit Signals on VN-Index")
     ax.set_ylabel("VN-Index close")
     ax.grid(alpha=0.25)
     ax.legend(loc="best")
@@ -736,7 +747,7 @@ def save_macd_signal_plot(macd_strategy: pd.DataFrame, output_dir: Path) -> None
 def save_macd_indicator_plot(macd_strategy: pd.DataFrame, output_dir: Path) -> None:
     fig, axes = plt.subplots(2, 1, figsize=(13, 8), sharex=True, gridspec_kw={"height_ratios": [2.0, 1.2]})
     axes[0].plot(macd_strategy["date"], macd_strategy["close"], color="#1f2937", linewidth=1.3, label="VN-Index")
-    axes[0].set_title("VN-Index and MACD(12,26,9) Indicator")
+    axes[0].set_title("VN-Index and MACD(6,26,12) Indicator")
     axes[0].set_ylabel("Close")
     axes[0].grid(alpha=0.25)
     axes[0].legend(loc="best")
@@ -771,7 +782,7 @@ def save_drawdown_comparison_plot(
 
     fig, ax = plt.subplots(figsize=(13, 5.5))
     ax.plot(strategy["date"], drawdown(strategy["strategy_equity"]), label="Ito Bayes-GARCH", color="#047857")
-    ax.plot(macd_strategy["date"], drawdown(macd_strategy["strategy_equity"]), label="MACD(12,26,9)", color="#ea580c")
+    ax.plot(macd_strategy["date"], drawdown(macd_strategy["strategy_equity"]), label="MACD(6,26,12)", color="#ea580c")
     ax.plot(strategy["date"], drawdown(strategy["benchmark_equity"]), label="Buy & Hold", color="#334155")
     ax.set_title("Drawdown Comparison on Test Set")
     ax.set_ylabel("Drawdown")
@@ -794,7 +805,7 @@ def save_rolling_risk_plot(
     macd_vol = macd_strategy["strategy_return"].rolling(window).std() * math.sqrt(TRADING_DAYS)
     bh_vol = strategy["benchmark_return"].rolling(window).std() * math.sqrt(TRADING_DAYS)
     ax.plot(strategy["date"], ito_vol, label="Ito Bayes-GARCH", color="#047857")
-    ax.plot(macd_strategy["date"], macd_vol, label="MACD(12,26,9)", color="#ea580c")
+    ax.plot(macd_strategy["date"], macd_vol, label="MACD(6,26,12)", color="#ea580c")
     ax.plot(strategy["date"], bh_vol, label="Buy & Hold", color="#334155")
     ax.set_title(f"Rolling {window}-Session Annualized Volatility on Test Set")
     ax.set_ylabel("Annualized volatility")
@@ -814,7 +825,7 @@ def save_return_distribution_plot(
     fig, ax = plt.subplots(figsize=(12, 5.5))
     series = [
         ("Ito Bayes-GARCH", strategy["strategy_return"], "#047857"),
-        ("MACD(12,26,9)", macd_strategy["strategy_return"], "#ea580c"),
+        ("MACD(6,26,12)", macd_strategy["strategy_return"], "#ea580c"),
         ("Buy & Hold", strategy["benchmark_return"], "#334155"),
     ]
     bins = np.linspace(-0.07, 0.07, 70)
@@ -905,7 +916,7 @@ def save_report(
 
 ## Backtest on Test
 
-| Metric | Ito Bayes-GARCH Strategy | MACD(12,26,9) Long/Exit | Buy & Hold |
+| Metric | Ito Bayes-GARCH Strategy | MACD(6,26,12) Long/Exit | Buy & Hold |
 |---|---:|---:|---:|
 | Total return | {format_pct(s_metrics['total_return'])} | {format_pct(m_metrics['total_return'])} | {format_pct(b_metrics['total_return'])} |
 | CAGR | {format_pct(s_metrics['cagr'])} | {format_pct(m_metrics['cagr'])} | {format_pct(b_metrics['cagr'])} |
@@ -919,8 +930,8 @@ def save_report(
 - `predictions.csv`: train/test forecasts and predictive bands.
 - `strategy_backtest.csv`: test-set signals, returns, and equity curves.
 - `full_data_backtest.csv`: full-sample signals, returns, and equity curves.
-- `macd_strategy_backtest.csv`: test-set MACD(12,26,9) long/exit signals and equity curve.
-- `macd_full_data_backtest.csv`: full-sample MACD(12,26,9) long/exit backtest.
+- `macd_strategy_backtest.csv`: test-set MACD(6,26,12) long/exit signals and equity curve.
+- `macd_full_data_backtest.csv`: full-sample MACD(6,26,12) long/exit backtest.
 - `advanced_backtest_metrics.csv`: raw numeric full/test advanced metrics.
 - `advanced_backtest_metrics_formatted.csv`: presentation-ready full/test metrics.
 - `advanced_backtest_metrics.md`: Markdown table for review.
@@ -1160,7 +1171,7 @@ def save_advanced_backtest_tables(
             full_ito,
             is_strategy=True,
         ),
-        "Full Data - MACD(12,26,9)": _add_operational_metrics(
+        "Full Data - MACD(6,26,12)": _add_operational_metrics(
             advanced_return_metrics(
                 full_macd,
                 return_col="strategy_return",
@@ -1192,7 +1203,7 @@ def save_advanced_backtest_tables(
             test_ito,
             is_strategy=True,
         ),
-        "Test - MACD(12,26,9)": _add_operational_metrics(
+        "Test - MACD(6,26,12)": _add_operational_metrics(
             advanced_return_metrics(
                 test_macd,
                 return_col="strategy_return",
@@ -1232,7 +1243,7 @@ def save_advanced_backtest_tables(
     formatted.to_csv(output_dir / "advanced_backtest_metrics_formatted.csv", index=False)
 
     markdown = "# Advanced Backtest Metrics\n\n"
-    markdown += "So sanh Ito Bayes-GARCH, MACD(12,26,9) long/exit va buy-and-hold tren Full Data va rieng Test.\n\n"
+    markdown += "So sanh Ito Bayes-GARCH, MACD(6,26,12) long/exit va buy-and-hold tren Full Data va rieng Test.\n\n"
     markdown += dataframe_to_markdown(formatted)
     markdown += "\n"
     (output_dir / "advanced_backtest_metrics.md").write_text(markdown, encoding="utf-8")
@@ -1275,6 +1286,9 @@ def run(cfg: StrategyConfig) -> dict[str, object]:
         test_forecast=test_forecast,
         transaction_cost=cfg.transaction_cost,
         risk_buffer=cfg.risk_buffer,
+        macd_fast=cfg.macd_fast,
+        macd_slow=cfg.macd_slow,
+        macd_signal=cfg.macd_signal,
     )
 
     f_metrics = forecast_metrics(pred)
@@ -1326,9 +1340,12 @@ def parse_args() -> StrategyConfig:
     parser.add_argument("--start-date", default="2006-01-01")
     parser.add_argument("--train-ratio", type=float, default=0.70)
     parser.add_argument("--transaction-cost", type=float, default=0.0005)
-    parser.add_argument("--risk-buffer", type=float, default=0.02)
-    parser.add_argument("--drift-window", type=int, default=63)
-    parser.add_argument("--drift-prior-strength", type=int, default=126)
+    parser.add_argument("--risk-buffer", type=float, default=0.08)
+    parser.add_argument("--drift-window", type=int, default=126)
+    parser.add_argument("--drift-prior-strength", type=int, default=63)
+    parser.add_argument("--macd-fast", type=int, default=6)
+    parser.add_argument("--macd-slow", type=int, default=26)
+    parser.add_argument("--macd-signal", type=int, default=12)
     parser.add_argument("--posterior-samples", type=int, default=2000)
     parser.add_argument("--random-state", type=int, default=42)
     args = parser.parse_args()
@@ -1341,6 +1358,9 @@ def parse_args() -> StrategyConfig:
         risk_buffer=args.risk_buffer,
         drift_window=args.drift_window,
         drift_prior_strength=args.drift_prior_strength,
+        macd_fast=args.macd_fast,
+        macd_slow=args.macd_slow,
+        macd_signal=args.macd_signal,
         posterior_samples=args.posterior_samples,
         random_state=args.random_state,
     )
@@ -1362,7 +1382,7 @@ def main() -> None:
     print(f"Forecast RMSE close: {fm['rmse_close']:.3f}")
     print(f"Directional accuracy: {fm['directional_accuracy']:.2%}")
     print(f"Ito strategy total return: {sm['total_return']:.2%}, Sharpe: {sm['sharpe']:.3f}")
-    print(f"MACD(12,26,9) total return: {mm['total_return']:.2%}, Sharpe: {mm['sharpe']:.3f}")
+    print(f"MACD(6,26,12) total return: {mm['total_return']:.2%}, Sharpe: {mm['sharpe']:.3f}")
     print(f"Buy & hold total return: {bm['total_return']:.2%}, Sharpe: {bm['sharpe']:.3f}")
 
 

@@ -1,15 +1,22 @@
 # VN-Index Stochastic Calculus, Bayes-GARCH và MACD Backtest
 
-Repo này kiểm định chiến lược ra/vào lệnh VN-Index dựa trên Stochastic Calculus, bổ đề Ito, chuyển động Brown, Bayes-GARCH và so sánh với thuật toán MACD(12,26,9) trong điều kiện chỉ `long` hoặc `exit/cash`.
+Repo này kiểm định chiến lược ra/vào lệnh VN-Index dựa trên Stochastic Calculus, bổ đề Ito, chuyển động Brown, Bayes-GARCH và so sánh với thuật toán MACD tối ưu `MACD(6,26,12)` trong điều kiện chỉ `long` hoặc `exit/cash`.
 
 ## Nội dung chính
 
-- `stochastic_ito_bayes_garch_strategy.py`: pipeline đọc dữ liệu, fit Ito Bayes-GARCH, tạo tín hiệu MACD, backtest và sinh báo cáo.
+- `stochastic_ito_bayes_garch_strategy.py`: pipeline chính với tham số đã tối ưu.
 - `optimize_strategy_parameters.py`: tối ưu tham số trên validation, sau đó đánh giá out-of-sample trên test.
-- `VN_Index_Stochastic_MACD_Backtest.ipynb`: notebook trực quan hóa, nhận xét học thuật, đo lường rủi ro và so sánh mô hình.
-- `READ.md`: báo cáo Markdown chính với bảng so sánh, total điểm, annual return, rủi ro nâng cao và thống kê lệnh.
-- `outputs_stochastic_calculus/`: toàn bộ CSV, PNG, báo cáo và bảng backtest.
-- `outputs_optimization/`: kết quả grid search, bảng tham số tối ưu, backtest test cuối và biểu đồ equity curve tối ưu.
+- `VN_Index_Stochastic_MACD_Backtest.ipynb`: notebook trực quan hóa, nhận xét học thuật và so sánh mô hình.
+- `READ.md`: báo cáo Markdown chi tiết với total điểm, annual return, rủi ro nâng cao và thống kê lệnh.
+- `outputs_stochastic_calculus/`: CSV, PNG, report và bảng backtest sau khi cập nhật tham số tối ưu.
+- `outputs_optimization/`: kết quả grid search, bảng tham số tối ưu và backtest test cuối.
+
+## Tham số đang chốt trong pipeline chính
+
+| Model | Parameters |
+|---|---|
+| Ito Bayes-GARCH | `drift_window=126`, `prior_strength=63`, `risk_buffer=0.08` |
+| MACD | `fast=6`, `slow=26`, `signal=12` |
 
 ## Chạy lại
 
@@ -23,24 +30,13 @@ Chạy tối ưu tham số:
 /home/namngyh/miniconda3/envs/eda/bin/python optimize_strategy_parameters.py
 ```
 
-## Kết quả test nổi bật
+## Kết quả test nổi bật sau cập nhật
 
 | Strategy | Total points | Total return | CAGR | Sharpe | Max drawdown |
 |---|---:|---:|---:|---:|---:|
-| Ito Bayes-GARCH | 379.70 | 30.75% | 4.51% | 0.373 | -20.32% |
-| MACD(12,26,9) | 840.55 | 88.10% | 10.95% | 0.939 | -25.18% |
+| Ito Bayes-GARCH | 274.26 | 30.08% | 4.42% | 0.489 | -13.99% |
+| MACD(6,26,12) | 1,101.27 | 130.15% | 14.70% | 1.223 | -21.27% |
 | Buy & Hold | 1,031.16 | 123.61% | 14.15% | 0.768 | -40.34% |
-
-## Kết quả tối ưu tham số
-
-Optimizer dùng split `60% train / 20% validation / 20% test`. Tham số được chọn trên validation, test cuối không dùng để chọn tham số.
-
-| Strategy | Best params | Test total return | Test CAGR | Test Sharpe | Test max drawdown |
-|---|---|---:|---:|---:|---:|
-| Baseline Ito | drift 63, prior 126, risk buffer 0.02 | 1.29% | 0.32% | 0.091 | -18.48% |
-| Optimized Ito | drift 21, prior 63, risk buffer 0.04 | 15.69% | 3.66% | 0.371 | -18.88% |
-| Baseline MACD | MACD(12,26,9) | 48.80% | 10.31% | 0.885 | -21.39% |
-| Optimized MACD | MACD(6,26,12) | 66.48% | 13.41% | 1.111 | -21.27% |
 
 ## Biểu đồ chính
 

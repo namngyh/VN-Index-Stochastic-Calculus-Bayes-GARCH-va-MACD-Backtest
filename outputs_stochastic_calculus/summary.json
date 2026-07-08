@@ -7,29 +7,29 @@
   "test_start": "2020-05-14",
   "test_end": "2026-07-01",
   "forecast_metrics": {
-    "rmse_close": 16.095808410280153,
-    "mae_close": 10.885098731998221,
-    "r2_close": 0.9958536362930079,
-    "directional_accuracy": 0.5522193211488251,
-    "mean_forecast_daily_return": 0.00036773478576495954,
+    "rmse_close": 16.095307113492016,
+    "mae_close": 10.862395464726784,
+    "r2_close": 0.9958538945622899,
+    "directional_accuracy": 0.5489556135770235,
+    "mean_forecast_daily_return": 0.00040721996401318027,
     "mean_actual_daily_return": 0.0005252803750638977,
     "mean_forecast_daily_volatility": 0.011875374043951833
   },
   "strategy_metrics": {
-    "total_return": 0.3074699110835688,
-    "cagr": 0.04508581042649795,
-    "annual_volatility": 0.14757076489042995,
-    "sharpe": 0.37336531969055153,
-    "max_drawdown": -0.20321740295429913,
-    "win_rate": 0.3766318537859008
+    "total_return": 0.30075558107668776,
+    "cagr": 0.04420110571315994,
+    "annual_volatility": 0.09842903865967566,
+    "sharpe": 0.48902759278232383,
+    "max_drawdown": -0.13987634987097897,
+    "win_rate": 0.19255874673629242
   },
   "macd_metrics": {
-    "total_return": 0.8809997304813664,
-    "cagr": 0.1095182219188382,
-    "annual_volatility": 0.11815960941260556,
-    "sharpe": 0.9390764612957001,
-    "max_drawdown": -0.25184177257677853,
-    "win_rate": 0.31723237597911225
+    "total_return": 1.3014949226533128,
+    "cagr": 0.1469575387689528,
+    "annual_volatility": 0.11787793036069139,
+    "sharpe": 1.2226984601086688,
+    "max_drawdown": -0.21272711815367962,
+    "win_rate": 0.32506527415143605
   },
   "benchmark_metrics": {
     "total_return": 1.2360916316035522,

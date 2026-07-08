@@ -1,24 +1,25 @@
 # VN-Index Stochastic Calculus, Bayes-GARCH va MACD Backtest
 
-Project này kiểm định chiến lược ra/vào lệnh VN-Index dựa trên Stochastic Calculus và so sánh với thuật toán MACD(12,26,9).
+Project này kiểm định chiến lược ra/vào lệnh VN-Index dựa trên Stochastic Calculus và so sánh với thuật toán MACD tối ưu.
 
 - Ito Bayes-GARCH: dự báo drift/volatility từ `dS/S = mu dt + sigma dW` và bổ đề Ito `d log(S) = (mu - 0.5 sigma^2)dt + sigma dW`.
-- MACD(12,26,9): `MACD line = EMA12 - EMA26`, `signal line = EMA9(MACD line)`.
-- Điều kiện MACD: chỉ `long` khi MACD line lớn hơn signal line, ngược lại `exit/cash`.
-- Tín hiệu MACD được dịch 1 phiên: tín hiệu sau khi đóng cửa hôm nay áp dụng cho lợi nhuận phiên kế tiếp.
+- MACD tối ưu: `MACD(6,26,12)`, tức `MACD line = EMA6 - EMA26`, `signal line = EMA12(MACD line)`.
+- Điều kiện giao dịch: chỉ `long` khi tín hiệu xác nhận, ngược lại `exit/cash`.
+- Tín hiệu MACD được dịch 1 phiên để giảm look-ahead bias.
 - Buy & Hold: benchmark nắm giữ VN-Index liên tục.
 
-## Cách chạy lại
+## Tham Số Đã Chốt
+
+| Model | Parameters |
+|---|---|
+| Ito Bayes-GARCH | `drift_window=126`, `prior_strength=63`, `risk_buffer=0.08` |
+| MACD | `fast=6`, `slow=26`, `signal=12` |
+
+## Cách Chạy Lại
 
 ```bash
 /home/namngyh/miniconda3/envs/eda/bin/python stochastic_ito_bayes_garch_strategy.py
 ```
-
-Kết quả được lưu trong `outputs_stochastic_calculus/`.
-
-Notebook trực quan chính:
-
-- `VN_Index_Stochastic_MACD_Backtest.ipynb`: notebook trình bày mô hình, biểu đồ, bảng đo lường và nhận xét học thuật.
 
 Chạy tối ưu tham số:
 
@@ -26,65 +27,66 @@ Chạy tối ưu tham số:
 /home/namngyh/miniconda3/envs/eda/bin/python optimize_strategy_parameters.py
 ```
 
-Kết quả tối ưu được lưu trong `outputs_optimization/`.
+Notebook trực quan chính:
 
-## Chia dữ liệu
+- `VN_Index_Stochastic_MACD_Backtest.ipynb`
+
+## Chia Dữ Liệu Pipeline Chính
 
 - Full data dùng cho backtest: `2006-01-03` đến `2026-07-01`, gồm `5,104` quan sát daily return.
 - Train: `2006-01-03` đến `2020-05-13`, gồm `3,572` quan sát.
 - Test: `2020-05-14` đến `2026-07-01`, gồm `1,532` quan sát.
 
-## Bảng So Sánh Chính
+## Bảng So Sánh Sau Khi Cập Nhật Tham Số
 
-| Metric | Full Data - Ito | Full Data - MACD(12,26,9) | Full Data - Buy & Hold | Test - Ito | Test - MACD(12,26,9) | Test - Buy & Hold |
+| Metric | Full Data - Ito | Full Data - MACD(6,26,12) | Full Data - Buy & Hold | Test - Ito | Test - MACD(6,26,12) | Test - Buy & Hold |
 |---|---:|---:|---:|---:|---:|---:|
-| Market exposure | 57.03% | 53.10% | 100.00% | 66.32% | 54.90% | 100.00% |
-| Total VN-Index points | 1,348.26 | 2,489.23 | 1,557.87 | 379.70 | 840.55 | 1,031.16 |
-| Annual VN-Index points | 66.57 | 122.90 | 76.92 | 62.46 | 138.26 | 169.62 |
-| Total return | 670.74% | 3219.12% | 506.62% | 30.75% | 88.10% | 123.61% |
-| CAGR | 10.61% | 18.88% | 9.31% | 4.51% | 10.95% | 14.15% |
-| Annualized mean return | 11.32% | 18.31% | 11.40% | 5.51% | 11.10% | 15.21% |
-| Annual volatility | 15.67% | 14.22% | 22.33% | 14.76% | 11.82% | 19.81% |
-| Downside volatility | 15.80% | 13.76% | 17.03% | 16.21% | 13.23% | 17.27% |
-| Sharpe ratio | 0.722 | 1.287 | 0.511 | 0.373 | 0.939 | 0.768 |
-| Sortino ratio | 0.716 | 1.331 | 0.670 | 0.340 | 0.839 | 0.881 |
-| Calmar ratio | 0.251 | 0.507 | 0.117 | 0.222 | 0.435 | 0.351 |
-| Max drawdown | -42.24% | -37.21% | -79.88% | -20.32% | -25.18% | -40.34% |
-| Average drawdown | -15.08% | -6.94% | -35.66% | -9.70% | -7.70% | -14.22% |
-| Ulcer index | 17.01% | 8.99% | 41.08% | 10.63% | 8.92% | 16.85% |
-| Daily VaR 95% | -1.47% | -1.28% | -2.42% | -1.44% | -1.06% | -2.00% |
-| Daily CVaR 95% | -2.60% | -2.21% | -3.51% | -2.68% | -2.01% | -3.40% |
-| Daily VaR 99% | -3.42% | -2.85% | -4.22% | -3.40% | -2.68% | -4.17% |
-| Daily CVaR 99% | -4.29% | -3.67% | -4.85% | -4.73% | -3.75% | -5.19% |
-| Profit factor | 1.188 | 1.369 | 1.095 | 1.087 | 1.253 | 1.152 |
-| Beta to buy-and-hold | 0.493 | 0.407 |  | 0.554 | 0.355 |  |
-| Annual alpha | 5.70% | 13.67% |  | -2.92% | 5.69% |  |
-| Tracking error | 15.90% | 17.17% |  | 13.23% | 15.91% |  |
-| Information ratio | -0.005 | 0.402 |  | -0.733 | -0.259 |  |
-| Up capture | 54.34% | 51.54% |  | 59.05% | 47.22% |  |
-| Down capture | 50.07% | 41.18% |  | 62.51% | 43.32% |  |
-| Trades | 116.0 | 166.0 |  | 49.0 | 57.0 |  |
-| Trade win rate | 39.66% | 50.60% |  | 46.94% | 49.12% |  |
-| Average trade return | 2.48% | 2.44% |  | 0.76% | 1.22% |  |
-| Median trade return | -0.50% | 0.01% |  | -0.20% | -0.32% |  |
-| Best trade | 88.38% | 56.72% |  | 37.92% | 18.66% |  |
-| Worst trade | -12.84% | -11.73% |  | -12.84% | -7.95% |  |
-| Average holding days | 26.1 | 17.3 |  | 21.7 | 15.7 |  |
-| Median holding days | 8.0 | 15.0 |  | 10.0 | 15.0 |  |
-| Expectancy per trade | 2.48% | 2.44% |  | 0.76% | 1.22% |  |
-| Average trade points | 11.62 | 15.00 |  | 7.75 | 14.75 |  |
-| Median trade points | -3.06 | 0.14 |  | -2.12 | -4.48 |  |
-| Best trade points | 454.34 | 236.65 |  | 337.44 | 236.65 |  |
-| Worst trade points | -117.49 | -98.97 |  | -115.59 | -81.76 |  |
+| Market exposure | 27.02% | 53.59% | 100.00% | 33.16% | 55.16% | 100.00% |
+| Total VN-Index points | 837.07 | 2,855.75 | 1,557.87 | 274.26 | 1,101.27 | 1,031.16 |
+| Annual VN-Index points | 41.33 | 141.00 | 76.92 | 45.11 | 181.15 | 169.62 |
+| Total return | 194.56% | 4431.92% | 506.62% | 30.08% | 130.15% | 123.61% |
+| CAGR | 5.48% | 20.72% | 9.31% | 4.42% | 14.70% | 14.15% |
+| Annualized mean return | 6.00% | 19.84% | 11.40% | 4.81% | 14.41% | 15.21% |
+| Annual volatility | 11.55% | 14.15% | 22.33% | 9.84% | 11.79% | 19.81% |
+| Downside volatility | 16.55% | 13.65% | 17.03% | 14.27% | 13.23% | 17.27% |
+| Sharpe ratio | 0.520 | 1.402 | 0.511 | 0.489 | 1.223 | 0.768 |
+| Sortino ratio | 0.363 | 1.454 | 0.670 | 0.337 | 1.090 | 0.881 |
+| Calmar ratio | 0.157 | 0.625 | 0.117 | 0.316 | 0.691 | 0.351 |
+| Max drawdown | -34.88% | -33.13% | -79.88% | -13.99% | -21.27% | -40.34% |
+| Average drawdown | -14.08% | -5.40% | -35.66% | -7.61% | -4.77% | -14.22% |
+| Ulcer index | 15.29% | 7.21% | 41.08% | 8.02% | 5.92% | 16.85% |
+| Daily VaR 95% | -0.79% | -1.27% | -2.42% | -0.79% | -1.02% | -2.00% |
+| Daily CVaR 95% | -1.95% | -2.19% | -3.51% | -1.76% | -1.99% | -3.40% |
+| Daily VaR 99% | -2.74% | -2.85% | -4.22% | -2.54% | -2.67% | -4.17% |
+| Daily CVaR 99% | -3.73% | -3.64% | -4.85% | -3.44% | -3.75% | -5.19% |
+| Profit factor | 1.194 | 1.407 | 1.095 | 1.157 | 1.344 | 1.152 |
+| Beta to buy-and-hold | 0.268 | 0.403 |  | 0.247 | 0.354 |  |
+| Annual alpha | 2.95% | 15.24% |  | 1.06% | 9.02% |  |
+| Tracking error | 19.11% | 17.22% |  | 17.20% | 15.92% |  |
+| Information ratio | -0.283 | 0.490 |  | -0.605 | -0.050 |  |
+| Up capture | 28.08% | 52.00% |  | 30.56% | 48.54% |  |
+| Down capture | 25.74% | 40.41% |  | 30.40% | 41.53% |  |
+| Trades | 102.0 | 192.0 |  | 48.0 | 64.0 |  |
+| Trade win rate | 44.12% | 51.56% |  | 45.83% | 53.12% |  |
+| Average trade return | 1.23% | 2.22% |  | 0.61% | 1.40% |  |
+| Median trade return | -0.67% | 0.15% |  | -0.55% | 0.15% |  |
+| Best trade | 35.07% | 39.82% |  | 14.13% | 14.07% |  |
+| Worst trade | -6.90% | -12.98% |  | -4.83% | -7.95% |  |
+| Average holding days | 14.5 | 15.2 |  | 11.6 | 14.2 |  |
+| Median holding days | 5.5 | 13.0 |  | 6.0 | 13.5 |  |
+| Expectancy per trade | 1.23% | 2.22% |  | 0.61% | 1.40% |  |
+| Average trade points | 8.21 | 14.87 |  | 5.71 | 17.21 |  |
+| Median trade points | -5.64 | 1.39 |  | -7.05 | 2.01 |  |
+| Best trade points | 240.32 | 234.05 |  | 139.94 | 234.05 |  |
+| Worst trade points | -81.04 | -85.46 |  | -81.04 | -81.76 |  |
 
 ## Nhận Xét Nhanh
 
-- Trên full data, MACD(12,26,9) vượt cả Ito và Buy & Hold: total return `3219.12%`, CAGR `18.88%`, Sharpe `1.287`.
-- Trên test, MACD đạt `88.10%`, thấp hơn Buy & Hold `123.61%` nhưng cao hơn Ito `30.75%`.
-- MACD có rủi ro test tốt hơn Buy & Hold: annual volatility `11.82%` so với `19.81%`, VaR 95% `-1.06%` so với `-2.00%`.
-- Ito có max drawdown test thấp nhất trong 3 nhóm: `-20.32%`, nhưng lợi nhuận thấp hơn.
-- MACD có beta thấp nhất với thị trường: `0.407` full data và `0.355` test, thể hiện mức tiếp xúc thị trường thấp hơn.
-- Theo tổng điểm VN-Index, MACD tốt hơn Ito trên cả full data và test, nhưng trên test vẫn thấp hơn Buy & Hold về điểm tuyệt đối.
+- MACD(6,26,12) hiện là chiến lược mạnh nhất trên test: total return `130.15%`, cao hơn Buy & Hold `123.61%`.
+- MACD(6,26,12) có Sharpe `1.223`, cao hơn Buy & Hold `0.768`, đồng thời annual volatility chỉ `11.79%` so với `19.81%`.
+- Ito Bayes-GARCH sau tối ưu là mô hình phòng thủ: max drawdown test chỉ `-13.99%`, thấp nhất trong ba nhóm.
+- Ito có beta test `0.247`, thể hiện mức phụ thuộc thị trường thấp, nhưng tổng lợi nhuận vẫn thấp hơn MACD và Buy & Hold.
+- MACD(6,26,12) tạo `1,101.27` điểm trên test, vượt Buy & Hold `1,031.16` điểm.
 
 ## Tối Ưu Tham Số
 
@@ -94,19 +96,12 @@ Quy trình tối ưu dùng split theo thời gian `60% train / 20% validation / 
 
 Test cuối không được dùng để chọn tham số.
 
-| Strategy | Best params | Test total points | Test total return | Test CAGR | Test Sharpe | Test max drawdown |
-|---|---|---:|---:|---:|---:|---:|
-| Baseline Ito | drift 63, prior 126, risk buffer 0.02 | 40.18 | 1.29% | 0.32% | 0.091 | -18.48% |
-| Optimized Ito | drift 21, prior 63, risk buffer 0.04 | 253.11 | 15.69% | 3.66% | 0.371 | -18.88% |
-| Baseline MACD | MACD(12,26,9) | 618.84 | 48.80% | 10.31% | 0.885 | -21.39% |
-| Optimized MACD | MACD(6,26,12) | 772.12 | 66.48% | 13.41% | 1.111 | -21.27% |
-| Buy & Hold | benchmark | 579.28 | 45.04% | 9.61% | 0.574 | -30.28% |
+Kết quả tối ưu gần nhất của bạn:
 
-Nhận xét tối ưu:
-
-- Ito được cải thiện rõ về return và Sharpe, nhưng vẫn là mô hình phòng thủ hơn là mô hình bắt trend mạnh.
-- MACD tối ưu `6,26,12` cải thiện cả total return, Sharpe và tổng điểm so với MACD mặc định `12,26,9`.
-- Trong test cuối `2022-05-30` đến `2026-07-01`, Optimized MACD vượt Buy & Hold về return/risk adjusted return, nhưng đây vẫn cần được kiểm định thêm bằng walk-forward.
+| Model | Best params | Validation score |
+|---|---|---:|
+| Ito Bayes-GARCH | `drift_window=126`, `prior_strength=63`, `risk_buffer=0.08` | 1.015 |
+| MACD | `fast=6`, `slow=26`, `signal=12` | 1.603 |
 
 ## File Output Quan Trọng
 

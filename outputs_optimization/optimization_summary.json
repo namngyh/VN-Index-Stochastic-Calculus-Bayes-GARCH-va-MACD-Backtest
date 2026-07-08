@@ -12,10 +12,10 @@
     "2026-07-01"
   ],
   "best_ito": {
-    "drift_window": 21,
+    "drift_window": 126,
     "prior_strength": 63,
-    "risk_buffer": 0.04,
-    "validation_score": 1.1073403357311231
+    "risk_buffer": 0.08,
+    "validation_score": 1.0153823340558215
   },
   "best_macd": {
     "fast": 6,

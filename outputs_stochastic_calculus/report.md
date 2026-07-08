@@ -5,8 +5,8 @@
 - Price process: `dS/S = mu dt + sigma dW`, with Brownian motion `W_t`.
 - Ito lemma: `d log(S) = (mu - 0.5 sigma^2)dt + sigma dW`.
 - Return engine: Student-t GARCH(1,1), then an approximate Bayesian posterior around the fitted parameters.
-- Drift forecast: Bayesian rolling mean over `63` sessions, shrunk toward the train-set prior with strength `126`.
-- Signal: long VN-Index when forecast log-return is greater than `0.02` times forecast daily volatility; otherwise cash.
+- Drift forecast: Bayesian rolling mean over `126` sessions, shrunk toward the train-set prior with strength `63`.
+- Signal: long VN-Index when forecast log-return is greater than `0.08` times forecast daily volatility; otherwise cash.
 - Transaction cost assumption: `0.05%` per position change.
 
 ## Data Split
@@ -27,32 +27,32 @@
 
 ## Forecast Quality on Test
 
-- RMSE close: `16.096`
-- MAE close: `10.885`
+- RMSE close: `16.095`
+- MAE close: `10.862`
 - R2 close: `0.9959`
-- Directional accuracy: `55.22%`
+- Directional accuracy: `54.90%`
 - Mean forecast daily log-return: `0.04%`
 - Mean actual daily log-return: `0.05%`
 - Mean forecast daily volatility: `1.19%`
 
 ## Backtest on Test
 
-| Metric | Ito Bayes-GARCH Strategy | MACD(12,26,9) Long/Exit | Buy & Hold |
+| Metric | Ito Bayes-GARCH Strategy | MACD(6,26,12) Long/Exit | Buy & Hold |
 |---|---:|---:|---:|
-| Total return | 30.75% | 88.10% | 123.61% |
-| CAGR | 4.51% | 10.95% | 14.15% |
-| Annual volatility | 14.76% | 11.82% | 19.81% |
-| Sharpe | 0.373 | 0.939 | 0.768 |
-| Max drawdown | -20.32% | -25.18% | -40.34% |
-| Win rate | 37.66% | 31.72% | 57.18% |
+| Total return | 30.08% | 130.15% | 123.61% |
+| CAGR | 4.42% | 14.70% | 14.15% |
+| Annual volatility | 9.84% | 11.79% | 19.81% |
+| Sharpe | 0.489 | 1.223 | 0.768 |
+| Max drawdown | -13.99% | -21.27% | -40.34% |
+| Win rate | 19.26% | 32.51% | 57.18% |
 
 ## Files
 
 - `predictions.csv`: train/test forecasts and predictive bands.
 - `strategy_backtest.csv`: test-set signals, returns, and equity curves.
 - `full_data_backtest.csv`: full-sample signals, returns, and equity curves.
-- `macd_strategy_backtest.csv`: test-set MACD(12,26,9) long/exit signals and equity curve.
-- `macd_full_data_backtest.csv`: full-sample MACD(12,26,9) long/exit backtest.
+- `macd_strategy_backtest.csv`: test-set MACD(6,26,12) long/exit signals and equity curve.
+- `macd_full_data_backtest.csv`: full-sample MACD(6,26,12) long/exit backtest.
 - `advanced_backtest_metrics.csv`: raw numeric full/test advanced metrics.
 - `advanced_backtest_metrics_formatted.csv`: presentation-ready full/test metrics.
 - `advanced_backtest_metrics.md`: Markdown table for review.
