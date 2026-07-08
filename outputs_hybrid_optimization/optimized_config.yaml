@@ -1,0 +1,40 @@
+data:
+  asset_name: VN-Index
+  data_path: data.csv
+  start_date: '2006-01-01'
+  min_train_observations: 252
+macd:
+  fast: 6
+  slow: 26
+  signal: 12
+ito_bayes_garch:
+  drift_window: 126
+  prior_strength: 63
+  risk_buffer: 0.08
+  posterior_samples: 600
+  random_state: 42
+risk_governor:
+  target_volatility: 0.25
+  loss_floor: -0.025
+  uncertainty_penalty_k: 0.0
+  uncertainty_penalty_min: 0.25
+  uncertainty_penalty_max: 1.0
+  profit_lock_threshold: 0.12
+  warning_drawdown: 0.1
+  danger_drawdown: 0.15
+  max_drawdown_constraint: -0.15
+  volatility_percentile_window: 252
+  realized_volatility_window: 21
+  trend_window: 63
+backtest:
+  transaction_cost: 0.0005
+  long_only: true
+  allow_short: false
+experiment:
+  train_ratio: 0.6
+  valid_ratio: 0.2
+  output_dir: outputs_hybrid_defensive_exposure
+  stress_years:
+  - 2008
+  - 2020
+  - 2022

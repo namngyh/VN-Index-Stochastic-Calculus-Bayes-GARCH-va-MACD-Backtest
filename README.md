@@ -7,11 +7,16 @@ Repo này kiểm định chiến lược ra/vào lệnh VN-Index dựa trên Sto
 - `stochastic_ito_bayes_garch_strategy.py`: pipeline chính với tham số đã tối ưu.
 - `optimize_strategy_parameters.py`: tối ưu tham số trên validation, sau đó đánh giá out-of-sample trên test.
 - `stress_year_backtest.py`: stress-test 3 chiến lược trong các năm VN-Index biến động khó khăn nhất.
+- `run_hybrid_experiment.py`: framework hybrid mới, trong đó MACD là alpha engine và Ito-Bayes-GARCH là defensive exposure/risk governor.
+- `optimize_hybrid_risk_governor.py`: tối ưu tham số risk governor trên validation và đánh giá test độc lập.
+- `src/`: module hóa data, indicator, forecast, risk governor, strategy, backtester, metrics và plots cho hybrid framework.
 - `VN_Index_Stochastic_MACD_Backtest.ipynb`: notebook trực quan hóa, nhận xét chi tiết và so sánh mô hình.
 - `READ.md`: báo cáo Markdown chi tiết với total điểm, annual return, rủi ro nâng cao và thống kê lệnh.
 - `outputs_stochastic_calculus/`: CSV, PNG, report và bảng backtest sau khi cập nhật tham số tối ưu.
 - `outputs_optimization/`: kết quả grid search, bảng tham số tối ưu và backtest test cuối.
 - `outputs_stress_years/`: bảng, hình ảnh và báo cáo stress-test theo từng năm biến động mạnh.
+- `outputs_hybrid_defensive_exposure/`: output framework hybrid defensive exposure.
+- `outputs_hybrid_optimization/`: output tối ưu tham số hybrid risk governor.
 
 ## Tham số đang chốt trong pipeline chính
 
@@ -36,6 +41,18 @@ Chạy stress-test các năm biến động mạnh:
 
 ```bash
 /home/namngyh/miniconda3/envs/eda/bin/python stress_year_backtest.py
+```
+
+Chạy hybrid defensive exposure framework:
+
+```bash
+/home/namngyh/miniconda3/envs/eda/bin/python run_hybrid_experiment.py
+```
+
+Chạy tối ưu hybrid risk governor:
+
+```bash
+/home/namngyh/miniconda3/envs/eda/bin/python optimize_hybrid_risk_governor.py
 ```
 
 ## Kết quả test nổi bật sau cập nhật
@@ -78,6 +95,65 @@ Stress-test chọn năm dựa trên composite stress score của VN-Index: annua
 
 Kết luận stress-test: Ito Bayes-GARCH là mô hình phòng thủ rõ rệt, đặc biệt trong năm giảm sâu như `2008` và `2022`; MACD(6,26,12) mạnh hơn khi thị trường có xu hướng hồi phục hoặc momentum rõ như `2020` và `2018`; Buy & Hold thắng trong năm tăng cực mạnh như `2006` nhưng phải chịu drawdown lớn.
 
+## Hybrid Defensive Exposure Framework
+
+Phiên bản hybrid mới giữ MACD làm alpha engine và chuyển Ito-Bayes-GARCH thành risk governor/capital allocation engine. Công thức lõi:
+
+`position_t = MACD_signal_t × risk_allocation_t`
+
+Trong đó risk allocation kết hợp volatility targeting, tail-risk hard exit, Bayesian uncertainty penalty và profit/equity protection. Regime detection hiện là report-only diagnostic để giải thích mô hình, chưa trực tiếp điều khiển position.
+
+| Strategy | Total return | CAGR | Sortino | Calmar | Max drawdown | Exposure |
+|---|---:|---:|---:|---:|---:|---:|
+| MACD only | 5956.38% | 22.46% | 1.562 | 0.678 | -33.13% | 54.11% |
+| MACD + volatility targeting | 936.60% | 12.24% | 1.387 | 0.625 | -19.57% | 40.29% |
+| MACD + full defensive exposure | 197.97% | 5.54% | 0.690 | 0.376 | -14.72% | 29.78% |
+| Buy & Hold | 506.32% | 9.31% | 0.670 | 0.116 | -79.88% | 100.00% |
+
+Kết luận nhanh: full defensive exposure model đạt constraint max drawdown `-15%` với max drawdown thực tế `-14.72%`, nhưng không đáng dùng hơn MACD only nếu mục tiêu chính là return hoặc risk-adjusted return. Giá trị chính của Ito-Bayes-GARCH trong bản này là giảm tail risk và drawdown, đặc biệt ở `2008`, `2022`, nhưng risk governor hiện còn quá bảo thủ và làm mất nhiều upside trong trend_up/recovery.
+
+![Hybrid equity curves](outputs_hybrid_defensive_exposure/equity_curves.png)
+
+![Hybrid drawdown curves](outputs_hybrid_defensive_exposure/drawdown_curves.png)
+
+![Hybrid position exposure](outputs_hybrid_defensive_exposure/position_exposure.png)
+
+![Hybrid risk allocation components](outputs_hybrid_defensive_exposure/risk_allocation_components.png)
+
+![Hybrid regime chart](outputs_hybrid_defensive_exposure/regime_chart.png)
+
+## Tối Ưu Hybrid Risk Governor
+
+Tối ưu mới giữ MACD(6,26,12) cố định làm alpha engine và chỉ grid-search phần risk governor trên validation. Best params:
+
+| Parameter | Value |
+|---|---:|
+| target_volatility | 25.00% |
+| loss_floor | -2.50% |
+| uncertainty_penalty_k | 0.00 |
+| profit_lock_threshold | 12.00% |
+| warning_drawdown | 10.00% |
+| danger_drawdown | 15.00% |
+
+Kết quả final test sau tối ưu:
+
+| Strategy | Total return | CAGR | Sortino | Calmar | Max drawdown | Exposure |
+|---|---:|---:|---:|---:|---:|---:|
+| MACD only | 66.48% | 13.41% | 1.000 | 0.630 | -21.27% | 54.95% |
+| MACD + volatility targeting | 64.79% | 13.12% | 1.014 | 0.647 | -20.28% | 53.77% |
+| MACD + full defensive exposure optimized | 43.34% | 9.29% | 0.857 | 0.626 | -14.84% | 39.57% |
+| Buy & Hold | 45.04% | 9.61% | 0.678 | 0.317 | -30.28% | 100.00% |
+
+Kết luận: bản optimized full defensive đạt constraint max drawdown `-15%` với max drawdown `-14.84%`, giảm rủi ro rõ so với MACD only `-21.27%`. Nhưng Calmar/Sortino vẫn chưa vượt MACD only và volatility targeting, nên đây là cấu hình phù hợp khi drawdown constraint là bắt buộc.
+
+![Optimized hybrid validation scores](outputs_hybrid_optimization/hybrid_validation_top_scores.png)
+
+![Optimized hybrid test equity](outputs_hybrid_optimization/optimized_test_equity_curves.png)
+
+![Optimized hybrid test drawdown](outputs_hybrid_optimization/optimized_test_drawdown_curves.png)
+
+![Optimized hybrid test exposure](outputs_hybrid_optimization/optimized_test_position_exposure.png)
+
 ## Biểu đồ chính
 
 - `outputs_stochastic_calculus/forecast_train_test.png`
@@ -94,5 +170,14 @@ Kết luận stress-test: Ito Bayes-GARCH là mô hình phòng thủ rõ rệt, 
 - `outputs_stress_years/stress_year_equity_curves.png`
 - `outputs_stress_years/stress_year_drawdowns.png`
 - `outputs_stress_years/stress_year_metric_heatmap.png`
+- `outputs_hybrid_defensive_exposure/equity_curves.png`
+- `outputs_hybrid_defensive_exposure/drawdown_curves.png`
+- `outputs_hybrid_defensive_exposure/position_exposure.png`
+- `outputs_hybrid_defensive_exposure/risk_allocation_components.png`
+- `outputs_hybrid_defensive_exposure/regime_chart.png`
+- `outputs_hybrid_optimization/optimized_test_position_exposure.png`
+- `outputs_hybrid_optimization/optimized_test_drawdown_curves.png`
+- `outputs_hybrid_optimization/optimized_test_equity_curves.png`
+- `outputs_hybrid_optimization/hybrid_validation_top_scores.png`
 
 Đây là research backtest, không phải khuyến nghị đầu tư hay hệ thống giao dịch thực chiến.

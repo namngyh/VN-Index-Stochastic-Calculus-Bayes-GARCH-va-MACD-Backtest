@@ -1,0 +1,22 @@
+{
+  "highest_total_return": "MACD only",
+  "best_max_drawdown": "MACD + full defensive exposure",
+  "best_calmar": "MACD only",
+  "best_sortino": "MACD only",
+  "full_defensive_total_return": 1.9797234898141136,
+  "full_defensive_max_drawdown": -0.14718094472173504,
+  "full_defensive_calmar": 0.3763152795722447,
+  "full_defensive_sortino": 0.6898536358063319,
+  "macd_total_return": 59.563818998648905,
+  "macd_max_drawdown": -0.3312896499389947,
+  "max_drawdown_constraint": -0.15,
+  "full_defensive_meets_drawdown_constraint": true,
+  "output_dir": "outputs_hybrid_defensive_exposure",
+  "stress_years": [
+    2008,
+    2020,
+    2022,
+    2018,
+    2006
+  ]
+}

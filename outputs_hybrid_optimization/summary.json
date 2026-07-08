@@ -1,0 +1,26 @@
+{
+  "highest_total_return": "MACD only",
+  "best_max_drawdown": "MACD + Ito hard gate",
+  "best_calmar": "MACD + volatility targeting",
+  "best_sortino": "MACD + volatility targeting",
+  "full_defensive_total_return": 0.433356376062503,
+  "full_defensive_max_drawdown": -0.14839557457504893,
+  "full_defensive_calmar": 0.6262061601945439,
+  "full_defensive_sortino": 0.8566665135156001,
+  "macd_total_return": 0.6647908729136709,
+  "macd_max_drawdown": -0.21272711815367973,
+  "max_drawdown_constraint": -0.15,
+  "full_defensive_meets_drawdown_constraint": true,
+  "output_dir": "outputs_hybrid_optimization",
+  "best_params": {
+    "target_volatility": 0.25,
+    "loss_floor": -0.025,
+    "uncertainty_penalty_k": 0.0,
+    "profit_lock_threshold": 0.12,
+    "warning_drawdown": 0.1,
+    "danger_drawdown": 0.15,
+    "uncertainty_penalty_min": 0.25,
+    "uncertainty_penalty_max": 1.0
+  },
+  "best_validation_objective": 0.11547449196629017
+}
