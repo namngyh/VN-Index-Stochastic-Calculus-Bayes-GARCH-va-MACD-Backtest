@@ -90,6 +90,76 @@ Khung thời gian test trong bảng: `2020-05-14` đến `2026-07-01` (`1,532` p
 - Ito có beta test `0.247`, thể hiện mức phụ thuộc thị trường thấp, nhưng tổng lợi nhuận vẫn thấp hơn MACD và Buy & Hold.
 - MACD(6,26,12) tạo `1,101.27` điểm trên test, vượt Buy & Hold `1,031.16` điểm.
 
+## Vì Sao Ito Bayes-GARCH Kém Hơn MACD Và Buy & Hold?
+
+### Nguyên Nhân
+
+1. **Mục tiêu của Ito Bayes-GARCH thiên về kiểm soát rủi ro hơn là bắt xu hướng**
+
+   Mô hình Ito Bayes-GARCH dùng drift và volatility để quyết định long/cash. Sau tối ưu, `risk_buffer=0.08` làm điều kiện vào lệnh bảo thủ hơn: drift kỳ vọng phải đủ lớn so với volatility mới được long. Vì vậy exposure trên test chỉ `33.16%`, thấp hơn rất nhiều so với Buy & Hold `100.00%` và thấp hơn MACD `55.16%`. Khi VN-Index tăng mạnh trong test, mô hình bỏ lỡ nhiều đoạn tăng.
+
+2. **Drift trong mô hình stochastic rất nhỏ và nhiễu**
+
+   Với chỉ số thị trường, thành phần drift hằng ngày thường nhỏ hơn volatility rất nhiều. Điều này khiến tín hiệu `forecast_log_return > risk_buffer * forecast_volatility` khó kích hoạt ổn định. Nói cách khác, mô hình bắt được rủi ro tốt hơn bắt được expected return.
+
+3. **GARCH mạnh ở dự báo volatility, không nhất thiết mạnh ở dự báo hướng giá**
+
+   Bayes-GARCH giúp mô hình nhận diện volatility clustering và tail risk, nhưng volatility forecast không đồng nghĩa với directional forecast. Kết quả directional accuracy quanh `54.90%` cho thấy tín hiệu hướng giá có tồn tại nhưng chưa đủ mạnh để tạo lợi nhuận vượt MACD.
+
+4. **MACD phù hợp hơn với regime có động lượng**
+
+   MACD(6,26,12) là bộ lọc trend-following. Trong giai đoạn test `2020-05-14` đến `2026-07-01`, VN-Index có các đoạn hồi phục và xu hướng rõ, nên MACD nắm bắt tốt hơn. MACD có exposure `55.16%`, trade win rate `53.12%`, average trade points `17.21`, đều tốt hơn Ito trên test.
+
+5. **Ito bị trade-off giữa drawdown thấp và upside thấp**
+
+   Ito có max drawdown test tốt nhất: `-13.99%`, thấp hơn MACD `-21.27%` và Buy & Hold `-40.34%`. Nhưng cái giá phải trả là total return chỉ `30.08%`, thấp hơn MACD `130.15%` và Buy & Hold `123.61%`.
+
+6. **Giả định log-return kiểu Brownian/GARCH chưa mô tả đầy đủ cấu trúc thị trường**
+
+   VN-Index chịu ảnh hưởng của dòng tiền, chính sách, tâm lý, thanh khoản và regime vĩ mô. Mô hình Ito-Bayes-GARCH hiện tại chủ yếu dùng chuỗi giá/return và volatility, nên chưa có thông tin trend, momentum, volume, macro hoặc regime filter. Vì vậy mô hình có nền tảng học thuật tốt nhưng chưa đủ thông tin để cạnh tranh với một rule momentum đơn giản trong giai đoạn thị trường có xu hướng.
+
+### Hệ Quả
+
+- Ito Bayes-GARCH phù hợp hơn như một **risk filter** hoặc **volatility-aware allocation model** thay vì một chiến lược alpha độc lập.
+- Nếu dùng đơn lẻ, mô hình có thể giúp giảm drawdown nhưng dễ underperform trong thị trường tăng.
+- MACD hiện đóng vai trò benchmark mạnh hơn về khả năng bắt trend và tạo điểm/lợi nhuận.
+- Buy & Hold vẫn mạnh khi thị trường có xu hướng tăng dài, nhưng rủi ro drawdown lớn hơn đáng kể.
+- Việc Ito có beta thấp `0.247` cho thấy nó giảm phụ thuộc thị trường, nhưng cũng làm mất upside khi thị trường đi lên.
+
+### Hướng Phát Triển
+
+1. **Kết hợp Ito Bayes-GARCH với MACD regime filter**
+
+   Chỉ cho Ito long khi MACD xác nhận trend tăng. Khi đó MACD xử lý hướng xu thế, còn Ito-GARCH xử lý volatility và rủi ro.
+
+2. **Đổi từ long/cash sang position sizing theo volatility**
+
+   Thay vì tín hiệu 0/1, dùng tỷ trọng:
+
+   `weight_t = target_vol / forecast_volatility_t`
+
+   Cách này giữ exposure khi drift dương nhưng giảm tỷ trọng trong giai đoạn volatility cao.
+
+3. **Dùng xác suất dự báo thay cho drift đơn điểm**
+
+   Có thể vào lệnh khi:
+
+   `P(r_{t+1} > 0) > threshold`
+
+   Cách này tận dụng posterior distribution tốt hơn so với chỉ dùng mean forecast.
+
+4. **Thêm momentum và technical features vào drift**
+
+   Drift có thể được mở rộng bằng các biến như MACD histogram, RSI, moving-average slope, volume regime hoặc realized volatility regime. Khi đó Ito-GARCH không chỉ là mô hình volatility mà trở thành mô hình return-risk có điều kiện.
+
+5. **Walk-forward refit**
+
+   Refit GARCH định kỳ theo rolling window để mô hình thích nghi với regime mới. Điều này đặc biệt quan trọng với VN-Index vì cấu trúc volatility thay đổi mạnh qua các giai đoạn khủng hoảng và hồi phục.
+
+6. **Tối ưu objective theo mục tiêu nghiên cứu**
+
+   Nếu mục tiêu là lợi nhuận, tối ưu CAGR/total points. Nếu mục tiêu là phòng thủ, tối ưu Sharpe/Calmar/max drawdown. Hiện objective đang cân bằng Sharpe, Calmar và CAGR nên Ito được chọn theo hướng phòng thủ.
+
 ## Tối Ưu Tham Số
 
 Quy trình tối ưu dùng split theo thời gian `60% train / 20% validation / 20% test`. Tham số được chọn trên validation bằng score:
