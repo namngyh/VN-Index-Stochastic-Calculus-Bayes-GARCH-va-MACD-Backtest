@@ -1,0 +1,44 @@
+{
+  "rows": 5104,
+  "train_rows": 3572,
+  "test_rows": 1532,
+  "train_start": "2006-01-03",
+  "train_end": "2020-05-13",
+  "test_start": "2020-05-14",
+  "test_end": "2026-07-01",
+  "forecast_metrics": {
+    "rmse_close": 16.095808410280153,
+    "mae_close": 10.885098731998221,
+    "r2_close": 0.9958536362930079,
+    "directional_accuracy": 0.5522193211488251,
+    "mean_forecast_daily_return": 0.00036773478576495954,
+    "mean_actual_daily_return": 0.0005252803750638977,
+    "mean_forecast_daily_volatility": 0.011875374043951833
+  },
+  "strategy_metrics": {
+    "total_return": 0.3074699110835688,
+    "cagr": 0.04508581042649795,
+    "annual_volatility": 0.14757076489042995,
+    "sharpe": 0.37336531969055153,
+    "max_drawdown": -0.20321740295429913,
+    "win_rate": 0.3766318537859008
+  },
+  "macd_metrics": {
+    "total_return": 0.8809997304813664,
+    "cagr": 0.1095182219188382,
+    "annual_volatility": 0.11815960941260556,
+    "sharpe": 0.9390764612957001,
+    "max_drawdown": -0.25184177257677853,
+    "win_rate": 0.31723237597911225
+  },
+  "benchmark_metrics": {
+    "total_return": 1.2360916316035522,
+    "cagr": 0.1415313546142709,
+    "annual_volatility": 0.19805857548417338,
+    "sharpe": 0.7682026529764497,
+    "max_drawdown": -0.4034293489993921,
+    "win_rate": 0.5718015665796344
+  },
+  "advanced_metric_rows": 378,
+  "output_dir": "outputs_stochastic_calculus"
+}
